@@ -13,11 +13,11 @@ Initially, I made a Python script but decided to port the tool to Go.
 - Supports a dry-run mode to preview actions without downloading files.
 
 ## Downloading and installing
-All binaries are located at:
+All binaries are located at: https://github.com/ChristoferBerruz/aplpdown/releases/latest
 
 You can use the following command to use the install script.
 ```bash
-curl -sSf https://github.com/ChristoferBerruz/aplpdown/install.sh | sh
+curl -sSf https://github.com/ChristoferBerruz/aplpdown/blob/main/install.sh | sh
 ```
 
 ## Building and Installing
