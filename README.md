@@ -12,6 +12,14 @@ Initially, I made a Python script but decided to port the tool to Go.
 - Maintains the directory structure of the source website.
 - Supports a dry-run mode to preview actions without downloading files.
 
+## Downloading and installing
+All binaries are located at:
+
+You can use the following command to use the install script.
+```bash
+curl -sSf https://github.com/ChristoferBerruz/aplpdown/install.sh | sh
+```
+
 ## Building and Installing
 
 ```sh
