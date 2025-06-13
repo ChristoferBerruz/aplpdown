@@ -25,7 +25,11 @@ URL="https://github.com/$REPO/releases/download/$VERSION/${BINARY}_${OS}_${ARCH}
 echo "Installing $BINARY $VERSION for $OS/$ARCH..."
 echo "Downloading from $URL"
 curl -L $URL | tar -xz
+echo "Download complete. Setting executable permissions..."
 chmod +x $BINARY
+echo "Moving $BINARY to /usr/local/bin/"
 sudo mv $BINARY /usr/local/bin/
 
-echo "$BINARY installed!"
+echo "$BINARY $VERSION installed successfully!"
+echo "You can now run $BINARY from anywhere in your terminal."
+echo "To remove it, simply delete /usr/local/bin/$BINARY"
