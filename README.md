@@ -35,12 +35,15 @@ go install github.com/ChristoferBerruz/aplpdown@latest
 ## Usage
 
 ```sh
-aplpdown [-dry-run/--dry-run] <url> <destination>
+Usage: aplpdown [--dry-run] [--only regex] [--exclude regex] [--max-depth N] <url> <destination>
 ```
 
 - `<url>`: The starting URL to crawl.
 - `<destination>`: The local directory where files and folders will be saved.
 - `-dry-run/--dry-run`: (Optional) If set, prints the files and folders that would be downloaded/created without actually downloading them.
+- `--only` <regex>: (Optional) Only download files matching this regex pattern.
+- `--exclude` <regex>: (Optional) Exclude files matching this regex pattern.
+- `--max-depth` <N>: (Optional) Maximum crawl depth. -1 means unlimited.
 
 ### Example
 

@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -24,7 +25,7 @@ func isFileLink(link string) bool {
 	return strings.Contains(base, ".")
 }
 
-func CrawlAndDownload(url, destination string, dryRun bool, visited map[string]bool) {
+func CrawlAndDownload(url, destination string, dryRun bool, visited map[string]bool, only, exclude *regexp.Regexp, maxDepth, currentDepth int) {
 	if visited[url] {
 		return
 	}
@@ -91,6 +92,12 @@ func CrawlAndDownload(url, destination string, dryRun bool, visited map[string]b
 
 	for _, fileLink := range fileLinks {
 		fileName := path.Base(fileLink)
+		if only != nil && !only.MatchString(fileName) {
+			continue
+		}
+		if exclude != nil && exclude.MatchString(fileName) {
+			continue
+		}
 		filePath := filepath.Join(destination, fileName)
 		if dryRun {
 			fmt.Printf("[Dry-run] Would download: %s to %s\n", fileLink, filePath)
@@ -117,6 +124,12 @@ func CrawlAndDownload(url, destination string, dryRun bool, visited map[string]b
 		}
 	}
 
+	if maxDepth >= 0 && (currentDepth+1) > maxDepth {
+		// If crawling the next depth exceeds the max depth, skip further crawling
+		fmt.Printf("Reached max depth %d at %s, skipping further crawling.\n", maxDepth, url)
+		return
+	}
+
 	for _, folderLink := range folderLinks {
 		folderName := path.Base(folderLink)
 		folderPath := filepath.Join(destination, folderName)
@@ -125,21 +138,43 @@ func CrawlAndDownload(url, destination string, dryRun bool, visited map[string]b
 		} else {
 			os.MkdirAll(folderPath, os.ModePerm)
 		}
-		CrawlAndDownload(folderLink, folderPath, dryRun, visited)
+		CrawlAndDownload(folderLink, folderPath, dryRun, visited, only, exclude, maxDepth, currentDepth+1)
 	}
 }
+
 func main() {
 	dryRun := flag.Bool("dry-run", false, "If set, only prints the files to be downloaded without downloading them.")
+	onlyPattern := flag.String("only", "", "Only download files matching this regex pattern.")
+	excludePattern := flag.String("exclude", "", "Exclude files matching this regex pattern.")
+	maxDepth := flag.Int("max-depth", -1, "Maximum crawl depth. -1 means unlimited.")
+
 	flag.Parse()
 	if flag.NArg() < 2 {
-		fmt.Println("Usage: cli <url> <destination> [-dry-run]")
+		fmt.Println("Usage: aplpdown [--dry-run] [--only regex] [--exclude regex] [--max-depth N] <url> <destination>")
 		os.Exit(1)
 	}
 	fmt.Println("Dry run mode:", *dryRun)
 	url := flag.Arg(0)
 	destination := flag.Arg(1)
 
+	var only, exclude *regexp.Regexp
+	var err error
+	if *onlyPattern != "" {
+		only, err = regexp.Compile(*onlyPattern)
+		if err != nil {
+			fmt.Printf("Invalid --only regex: %v\n", err)
+			os.Exit(1)
+		}
+	}
+	if *excludePattern != "" {
+		exclude, err = regexp.Compile(*excludePattern)
+		if err != nil {
+			fmt.Printf("Invalid --exclude regex: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
 	os.MkdirAll(destination, os.ModePerm)
 	visited := make(map[string]bool)
-	CrawlAndDownload(url, destination, *dryRun, visited)
+	CrawlAndDownload(url, destination, *dryRun, visited, only, exclude, *maxDepth, 0)
 }
